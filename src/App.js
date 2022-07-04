@@ -1,6 +1,4 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { User } from './components/User';
-import { AddUser } from './components/NewUser';
 import './App.css';
 import Nav from './components/Nav';
 import { BiSearch } from 'react-icons/bi';
@@ -71,31 +69,8 @@ export default function App() {
 
 	const onEdit = async (id) => {
 		setEditingUser(true);
-		// await fetch(`https://jsonplaceholder.typicode.com/users/${id}`, {
-		// 	method: 'PUT',
-		// 	body: JSON.stringify({
-		// 		name: name,
-		// 		email: email,
-		//     phone: phone
-		// 	}),
-		// 	headers: {
-		// 		'Content-type': 'application/json; charset=UTF-8',
-		// 	},
-		// })
-		// 	.then((response) => {
-		// 		if (response.status !== 200) {
-		// 			return;
-		// 		} else {
-		// 			return response.json();
-		// 		}
-		// 	})
-		// 	.then((data) => {
 		const filteredUser = users.filter((user) => user.id * 1 === id * 1);
 		setUserDetails(filteredUser);
-
-		// setUsers((users) => updatedUsers);
-		// })
-		// .catch((error) => console.log(error));
 	};
 
 	const onDelete = async (id) => {
@@ -115,17 +90,6 @@ export default function App() {
 			})
 			.catch((error) => console.log(error));
 	};
-
-	// const setChange = (e)=>{
-	// let input = e.target.name;
-	// let value = e.target.value
-	// if(input === 'fname') setFName(value)
-	// if(input === 'lname') setFName(value)
-	// if(input === 'email') setFName(value)
-	// if(input === 'phone') setFName(value)
-
-	// }
-	// console.log(fname +lname+email+phone)
 
 	const CreateUser = () => {
 		setCreatingNewUser(true);
