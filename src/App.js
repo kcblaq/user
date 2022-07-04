@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { User } from './components/User';
 import { AddUser } from './components/NewUser';
 import './App.css';
@@ -12,14 +12,19 @@ import {
 } from 'react-icons/ai';
 
 export default function App() {
+	const fnameRef = useRef();
+	const lnameRef = useRef();
+	const emailRef = useRef();
+	const phoneRef = useRef();
+
+	const editingName = useRef();
+	const editingEmail = useRef();
+	const EditingPhone = useRef();
+
 	const [users, setUsers] = useState([]);
 	const [creatingNewUser, setCreatingNewUser] = useState(false);
-  const [fname, setFName] = useState('')
-  const [lname, setLName] = useState('')
-  const [email, setEmail] = useState('')
-  const [phone, setPhone] = useState('')
-
-	
+	const [editingUser, setEditingUser] = useState(false);
+	const [userDetails, setUserDetails] = useState({});
 
 	useEffect(() => {
 		fetchData();
@@ -33,17 +38,14 @@ export default function App() {
 	};
 
 	const onAdd = async (e) => {
-    e.preventDefault()
-    setFName(e.target.fname.value);
-		setLName(e.target.lname.value);
-		setEmail(e.target.email.value);
-		setPhone(e.target.phone.value);
+		e.preventDefault();
+
 		await fetch('https://jsonplaceholder.typicode.com/users', {
 			method: 'POST',
 			body: JSON.stringify({
-				name: fname+" "+lname,
-        email: email,
-        phone: phone
+				name: fnameRef.current.value + ' ' + lnameRef.current.value,
+				email: emailRef.current.value,
+				phone: phoneRef.current.value,
 			}),
 			headers: {
 				'Content-type': 'application/json; charset=UTF-8',
@@ -57,42 +59,43 @@ export default function App() {
 				}
 			})
 			.then((data) => {
-				setUsers((users) => [...users, data]);
+				let length = users.length;
+				let newResult = { ...data };
+				newResult.id = length + 1;
+				setUsers((users) => [...users, newResult]);
+
+				console.log('users', users);
 			})
 			.catch((error) => console.log(error));
 	};
 
-	const onEdit = async (id, name, email) => {
-		await fetch(`https://jsonplaceholder.typicode.com/users/${id}`, {
-			method: 'PUT',
-			body: JSON.stringify({
-				name: name,
-				email: email,
-			}),
-			headers: {
-				'Content-type': 'application/json; charset=UTF-8',
-			},
-		})
-			.then((response) => {
-				if (response.status !== 200) {
-					return;
-				} else {
-					return response.json();
-				}
-			})
-			.then((data) => {
-				const updatedUsers = users.map((user) => {
-					if (user.id === id) {
-						user.name = name;
-						user.email = email;
-					}
+	const onEdit = async (id) => {
+		setEditingUser(true);
+		// await fetch(`https://jsonplaceholder.typicode.com/users/${id}`, {
+		// 	method: 'PUT',
+		// 	body: JSON.stringify({
+		// 		name: name,
+		// 		email: email,
+		//     phone: phone
+		// 	}),
+		// 	headers: {
+		// 		'Content-type': 'application/json; charset=UTF-8',
+		// 	},
+		// })
+		// 	.then((response) => {
+		// 		if (response.status !== 200) {
+		// 			return;
+		// 		} else {
+		// 			return response.json();
+		// 		}
+		// 	})
+		// 	.then((data) => {
+		const filteredUser = users.filter((user) => user.id * 1 === id * 1);
+		setUserDetails(filteredUser);
 
-					return user;
-				});
-
-				setUsers((users) => updatedUsers);
-			})
-			.catch((error) => console.log(error));
+		// setUsers((users) => updatedUsers);
+		// })
+		// .catch((error) => console.log(error));
 	};
 
 	const onDelete = async (id) => {
@@ -112,9 +115,19 @@ export default function App() {
 			})
 			.catch((error) => console.log(error));
 	};
-console.log(fname)
 
-  const CreateUser = () => {
+	// const setChange = (e)=>{
+	// let input = e.target.name;
+	// let value = e.target.value
+	// if(input === 'fname') setFName(value)
+	// if(input === 'lname') setFName(value)
+	// if(input === 'email') setFName(value)
+	// if(input === 'phone') setFName(value)
+
+	// }
+	// console.log(fname +lname+email+phone)
+
+	const CreateUser = () => {
 		setCreatingNewUser(true);
 		return (
 			<div className="absolute w-2/4 h-1/4 border-black left-20 bg-white drop-shadow-md p-6 z-20 top-50 md:left-72 md:w-2/4 md:h-2/5 rounded-lg ">
@@ -130,27 +143,91 @@ console.log(fname)
 						placeholder="First Name"
 						name="fname"
 						className="border-2 p-2 rounded w-2/4"
+						ref={fnameRef}
 					/>
 					<input
 						placeholder="Last Name"
 						name="lname"
+						// value={lname}
+						ref={lnameRef}
 						className="border-2 p-2 rounded w-2/4"
 					/>
 					<input
 						placeholder="Email"
 						name="email"
-            
+						ref={emailRef}
 						className="border-2 p-2 rounded w-2/4"
 					/>
 					<input
 						placeholder="Phone"
-            
 						name="phone"
+						ref={phoneRef}
 						className="border-2 p-2 rounded w-2/4"
 					/>
 					<hr />
 					<button
 						onSubmit={onAdd}
+						className="float-right border-2 rounded-lg p-2 mt-4 bg-blue-500 text-white">
+						Create user
+					</button>
+					{}
+				</form>
+			</div>
+		);
+	};
+
+	const HandleEditSubmit = (e) => {
+		e.preventDefault();
+		// console.log(editingName.current.value +editingEmail.current.value+EditingPhone.current.value)
+		const newUsers = [...users];
+		const currentid = userDetails[0].id - 1;
+		const splicedres = newUsers.splice(currentid, 1, {
+			name: editingName.current.value,
+			email: editingEmail.current.value,
+			phone: EditingPhone.current.value,
+			id: currentid + 1,
+		});
+		setUsers(newUsers);
+		setEditingUser(false);
+	};
+
+	const EditUser = () => {
+		setEditingUser(true);
+		return (
+			<div className="absolute w-2/4 h-1/4 border-black left-20 bg-white drop-shadow-md p-6 z-20 top-50 md:left-72 md:w-2/4 md:h-2/5 rounded-lg ">
+				<div className="flex justify-between mb-4">
+					<h4> Edit User</h4>
+					<button onClick={() => setEditingUser(false)}>
+						<strong>X</strong>{' '}
+					</button>
+				</div>
+				<hr></hr>
+				<form onSubmit={HandleEditSubmit}>
+					<input
+						placeholder="First Name"
+						name="name"
+						ref={editingName}
+						defaultValue={userDetails[0].name}
+						className="border-2 p-2 rounded w-2/4"
+					/>
+
+					<input
+						placeholder="Email"
+						name="email"
+						ref={editingEmail}
+						defaultValue={userDetails[0].email}
+						className="border-2 p-2 rounded w-2/4"
+					/>
+					<input
+						placeholder="Phone"
+						name="phone"
+						ref={EditingPhone}
+						defaultValue={userDetails[0].phone}
+						className="border-2 p-2 rounded w-2/4"
+					/>
+					<hr />
+					<button
+						onSubmit={HandleEditSubmit}
 						className="float-right border-2 rounded-lg p-2 mt-4 bg-blue-500 text-white">
 						Create user
 					</button>
@@ -165,7 +242,8 @@ console.log(fname)
 			<div className="App">
 				<div className="flex justify-between align-middle mt-4 border-2 p-4 text-base w-full">
 					<button> View All Users</button>
-          {creatingNewUser && <CreateUser/>}
+					{creatingNewUser && <CreateUser />}
+					{editingUser && <EditUser />}
 					<button
 						onClick={CreateUser}
 						className="bg-[#3399FF] text-white p-2 rounded">
@@ -239,12 +317,12 @@ console.log(fname)
 									<td className="px-6 py-4">{user.email}</td>
 									<td className="px-6 py-4 ">
 										<button
-											onClick={onEdit}
+											onClick={() => onEdit(user.id)}
 											className="font-medium text-blue-600 dark:text-blue-500 hover:underline">
 											<AiFillEdit className="md:mr-4" />{' '}
 										</button>
 										<button
-											onClick={onDelete}
+											onClick={(id) => onDelete(id)}
 											className="font-medium text-blue-600 dark:text-blue-500 hover:underline">
 											<AiFillDelete />
 										</button>
