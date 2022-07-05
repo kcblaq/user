@@ -8,6 +8,9 @@ import {
 	AiFillEdit,
 	AiFillDelete,
 } from 'react-icons/ai';
+import Modal from './components/Modal';
+// import MyModal from './components/Modal';
+
 
 export default function App() {
 	const fnameRef = useRef();
@@ -22,7 +25,10 @@ export default function App() {
 	const [users, setUsers] = useState([]);
 	const [creatingNewUser, setCreatingNewUser] = useState(false);
 	const [editingUser, setEditingUser] = useState(false);
-	const [userDetails, setUserDetails] = useState({});
+	const [userDetails, setUserDetails] = useState({})
+	const [delModal, setDelModal] = useState(false)
+	const [editingId, setEditingId] = useState(null)
+
 
 	useEffect(() => {
 		fetchData();
@@ -73,6 +79,9 @@ export default function App() {
 		setUserDetails(filteredUser);
 	};
 
+	
+
+
 	const onDelete = async (id) => {
 		await fetch(`https://jsonplaceholder.typicode.com/users/${id}`, {
 			method: 'DELETE',
@@ -90,6 +99,27 @@ export default function App() {
 			})
 			.catch((error) => console.log(error));
 	};
+	
+
+	// const Modal = (id) => {
+	// 	setDelModal(true)
+	// 	return (
+	// 		<div className="absolute w-1/4 h-2/4 border-black left-20 flex-col bg-white drop-shadow-md p-6 text-lg z-20 top-50 md:left-72 md:w-2/4 md:h-2/5 rounded-lg ">
+	// 			<div className="flex flex-col mb-4">
+	// 				<button className='flex justify-end float-right mb-10 w-full' onClick={() => setDelModal(false)}>
+	// 					X
+	// 				</button>
+	// 			<h1> Are you sure you want to Disable User</h1>
+	// 			</div>
+	// 			<div className='flex justify-around mt-8'>
+	// 			<button className='bg-blue-500 text-white p-4 w-1/4 rounded'> Yes</button>
+	// 			<button className=' p-4 w-1/4 rounded'> No, Cancel</button>
+	// 			</div>
+				
+	// 		</div>
+	// 	);
+	// };
+	console.log(editingId)
 
 	const CreateUser = () => {
 		setCreatingNewUser(true);
@@ -208,6 +238,7 @@ export default function App() {
 					<button> View All Users</button>
 					{creatingNewUser && <CreateUser />}
 					{editingUser && <EditUser />}
+					{ delModal && <Modal/>}
 					<button
 						onClick={CreateUser}
 						className="bg-[#3399FF] text-white p-2 rounded">
@@ -286,7 +317,7 @@ export default function App() {
 											<AiFillEdit className="md:mr-4" />{' '}
 										</button>
 										<button
-											onClick={(id) => onDelete(id)}
+											onClick={()=> {onDelete(user.id)}}
 											className="font-medium text-blue-600 dark:text-blue-500 hover:underline">
 											<AiFillDelete />
 										</button>
